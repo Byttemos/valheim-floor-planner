@@ -1,0 +1,59 @@
+@using FloorPlanner.Core.Geometry
+@using FloorPlanner.Core.Model
+
+<g class="@CssClass">
+    @foreach (var (from, to) in Segments())
+    {
+        <line x1="@from.X" y1="@from.Y" x2="@to.X" y2="@to.Y" stroke-width="@Wall.Thickness" />
+    }
+    @if (Wall.Length > 0)
+    {
+        var (position, angle) = LabelPlacement();
+        @* Label size is given in screen pixels, so divide by the scale to keep it constant while zooming.
+           Wrapped in <g> because a bare <text> inside @if is Razor's own text tag. *@
+        <g transform="rotate(@angle @position.X @position.Y)">
+            <text x="@position.X" y="@position.Y" stroke-width="@(3 / Scale)" font-size="@(12 / Scale)" text-anchor="middle">@($"{Wall.Length / 1000:0.#} m")</text>
+        </g>
+    }
+</g>
+
+@code {
+    [Parameter, EditorRequired] public Wall Wall { get; set; } = default!;
+    [Parameter] public IReadOnlyList<(double From, double To)> Openings { get; set; } = [];
+    [Parameter] public double Scale { get; set; } = 1;
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Ghost { get; set; }
+
+    private string CssClass => Ghost ? "wall ghost" : Selected ? "wall selected" : "wall";
+
+    private Vec2 PointAt(double distance) => Wall.Start + (Wall.End - Wall.Start) * (distance / Wall.Length);
+
+    // The solid parts of the wall: everything between door openings.
+    private IEnumerable<(Vec2 From, Vec2 To)> Segments()
+    {
+        if (Wall.Length == 0 || Openings.Count == 0)
+        {
+            yield return (Wall.Start, Wall.End);
+            yield break;
+        }
+
+        var cursor = 0.0;
+        foreach (var (from, to) in Openings)
+        {
+            if (from > cursor) yield return (PointAt(cursor), PointAt(from));
+            cursor = Math.Max(cursor, to);
+        }
+        if (cursor < Wall.Length) yield return (PointAt(cursor), Wall.End);
+    }
+
+    // Place the label alongside the wall, rotated to follow it but never upside down.
+    private (Vec2 Position, double Angle) LabelPlacement()
+    {
+        var direction = (Wall.End - Wall.Start) / Wall.Length;
+        if (direction.X < 0 || (direction.X == 0 && direction.Y > 0)) direction = direction * -1;
+
+        var normal = new Vec2(direction.Y, -direction.X);
+        var position = Wall.Midpoint + normal * (Wall.Thickness / 2 + 6 / Scale);
+        return (position, Angles.Of(direction));
+    }
+}

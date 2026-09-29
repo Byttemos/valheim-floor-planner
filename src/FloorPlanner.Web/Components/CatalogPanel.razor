@@ -1,0 +1,42 @@
+@using FloorPlanner.Core.Catalog
+@using FloorPlanner.Web.Editor
+@using FloorPlanner.Web.Editor.Tools
+@implements IDisposable
+@inject EditorState State
+
+<aside class="catalog">
+    @if (State.CatalogError is { } error)
+    {
+        <p class="error">@error</p>
+    }
+    @foreach (var group in State.Catalog.Placeable.GroupBy(i => i.Category))
+    {
+        <h3>@group.Key</h3>
+        @foreach (var item in group)
+        {
+            <button class="@(IsActive(item) ? "active" : "")" title="@($"{item.Name} ({Metres(item.Size.X)} × {Metres(item.Size.Y)} m)")"
+                    @onclick="() => State.SetTool(new PlaceTool(item))">
+                @if (AssetUrls.For(item.Image) is { } src)
+                {
+                    <img src="@src" alt="" />
+                }
+                else
+                {
+                    <span class="no-icon"></span>
+                }
+                <span class="name">@item.Name</span>
+                <span class="size">@Metres(item.Size.X)×@Metres(item.Size.Y)</span>
+            </button>
+        }
+    }
+</aside>
+
+@code {
+    private bool IsActive(CatalogItem item) => State.ActiveTool is PlaceTool tool && tool.Item.Id == item.Id;
+
+    private static string Metres(double mm) => $"{mm / 1000:0.##}";
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+    public void Dispose() => State.Changed -= OnStateChanged;
+    private void OnStateChanged() => StateHasChanged();
+}

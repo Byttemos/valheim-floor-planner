@@ -1,0 +1,22 @@
+@using FloorPlanner.Core.Materials
+@using FloorPlanner.Web.Editor
+@implements IDisposable
+@inject EditorState State
+
+<footer class="status-bar">
+    <span>@State.ActiveTool.Hint</span>
+    <span class="spacer"></span>
+    <span>x @($"{State.Cursor.X / 1000:0.00}") m · y @($"{State.Cursor.Y / 1000:0.00}") m</span>
+    <span title="Wall pieces needed">@Sections.Full × 2 m · @Sections.Half × 1 m walls · @State.Plan.Placements.Count pieces</span>
+    <span>@($"{State.Viewport.Scale * 1000:0}") px/m</span>
+    <span>Scroll to zoom · Middle-drag to pan</span>
+</footer>
+
+@code {
+    // Same count as the bill of materials: all courses, minus the sections doors replace.
+    private (int Full, int Half) Sections => BomCalculator.WallPieces(State.Plan, State.Catalog);
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+    public void Dispose() => State.Changed -= OnStateChanged;
+    private void OnStateChanged() => StateHasChanged();
+}

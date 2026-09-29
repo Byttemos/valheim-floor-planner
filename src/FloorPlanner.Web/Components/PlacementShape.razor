@@ -1,0 +1,62 @@
+@using FloorPlanner.Core.Catalog
+@using FloorPlanner.Core.Geometry
+@using FloorPlanner.Core.Model
+@using FloorPlanner.Web.Editor
+
+@* We have no top-down art, so a piece is its in-game footprint as a dotted outline, with the icon and name on top.
+   Only the outline rotates; icon and name stay upright so they're readable. *@
+<g class="@CssClass">
+    <g transform="translate(@Pose.Center.X @Pose.Center.Y) rotate(@Pose.Rotation)">
+        <rect x="@(-Size.X / 2)" y="@(-Size.Y / 2)" width="@Size.X" height="@Size.Y"
+              stroke-width="@(1.5 / Scale)" stroke-dasharray="@($"{5 / Scale} {3 / Scale}")" />
+    </g>
+    @if (AssetUrls.For(Item?.Image) is { } href)
+    {
+        <image href="@href" x="@(Pose.Center.X - IconSize / 2)" y="@(Pose.Center.Y - IconSize / 2)"
+               width="@IconSize" height="@IconSize" preserveAspectRatio="xMidYMid meet" />
+    }
+    @{ var (label, angle) = LabelPlacement(); }
+    <g transform="rotate(@angle @label.X @label.Y)">
+        <text x="@label.X" y="@label.Y" stroke-width="@(3 / Scale)" font-size="@(11 / Scale)" text-anchor="middle">@(Item?.Name ?? $"? {ItemId}")</text>
+    </g>
+</g>
+
+@code {
+    [Parameter] public CatalogItem? Item { get; set; }
+    [Parameter] public string ItemId { get; set; } = "";
+    [Parameter] public Pose Pose { get; set; }
+    [Parameter] public double Scale { get; set; } = 1;
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Ghost { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+
+    // Pieces missing from the catalog (e.g. renamed ids) still show up, as a 1 m square, so they can be deleted.
+    private Vec2 Size => Item?.Size ?? new Vec2(1000, 1000);
+    private bool HasIcon => AssetUrls.For(Item?.Image) is not null;
+    private double IconSize => Math.Min(Size.X, Size.Y) * 0.6;
+
+    private (Vec2 Position, double Angle) LabelPlacement()
+    {
+        // Doors: beside the wall, following it (never upside down), opposite the wall's length label.
+        if (Item?.Placement == PlacementKind.Wall)
+        {
+            var direction = new Vec2(1, 0).Rotate(Pose.Rotation);
+            if (direction.X < -1e-9 || (Math.Abs(direction.X) <= 1e-9 && direction.Y > 0)) direction = direction * -1;
+            var below = new Vec2(-direction.Y, direction.X);
+            return (Pose.Center + below * (Size.Y / 2 + 14 / Scale), Angles.Of(direction));
+        }
+
+        // Free pieces: upright, under the icon, or in the middle when there is none.
+        var y = HasIcon ? Pose.Center.Y + IconSize / 2 + 12 / Scale : Pose.Center.Y + 4 / Scale;
+        return (Pose.Center with { Y = y }, 0);
+    }
+
+    private string CssClass => string.Join(' ', new[]
+    {
+        "piece",
+        Item is null ? "unknown" : "",
+        Selected ? "selected" : "",
+        Ghost ? "ghost" : "",
+        Invalid ? "invalid" : "",
+    }.Where(c => c != ""));
+}

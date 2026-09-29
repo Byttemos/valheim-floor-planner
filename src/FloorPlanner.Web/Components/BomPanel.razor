@@ -1,0 +1,103 @@
+@using FloorPlanner.Core.Materials
+@using FloorPlanner.Core.Model
+@using FloorPlanner.Web.Editor
+@implements IDisposable
+@inject EditorState State
+
+<aside class="bom @(State.BomOpen ? "open" : "")" aria-label="Bill of materials">
+    <button class="bom-tab" title="Bill of materials (B)" @onclick="State.ToggleBom">Materials</button>
+
+    <div class="bom-body">
+        <header>
+            <h2>Bill of materials</h2>
+            <button class="close" title="Close (B)" @onclick="State.ToggleBom">×</button>
+        </header>
+
+        <section class="settings">
+            <label>
+                Wall height
+                <select value="@Build.WallCourses" @onchange="SetCourses">
+                    @for (var i = 1; i <= BuildSettings.MaxWallCourses; i++)
+                    {
+                        <option value="@i">@i × 2 m (@(i * 2) m)</option>
+                    }
+                </select>
+            </label>
+            <label class="check">
+                <input type="checkbox" checked="@Build.Roof" @onchange="SetRoof" /> Include roof
+            </label>
+        </section>
+
+        <section class="totals">
+            @if (Bom.Totals.Count == 0)
+            {
+                <p class="empty">Draw some walls to see what the build needs.</p>
+            }
+            @foreach (var (resource, amount) in Bom.Totals)
+            {
+                <div class="@(IsWood(resource) ? "total wood" : "total")"><span>@resource</span><strong>@amount</strong></div>
+            }
+        </section>
+
+        @foreach (var group in Bom.Sections.Where(s => s.Lines.Count > 0))
+        {
+            <h3>@group.Title</h3>
+            <table>
+                @foreach (var line in group.Lines)
+                {
+                    <tr class="@(line.UnitCost is null ? "unknown" : "")">
+                        <td class="count">@line.Count ×</td>
+                        <td>@line.Name</td>
+                        <td class="cost">@CostText(line)</td>
+                    </tr>
+                }
+            </table>
+        }
+
+        <footer>
+            @if (Bom.FloorAreaSquareMetres > 0)
+            {
+                <p>Floor area: @($"{Bom.FloorAreaSquareMetres:0.#}") m².</p>
+            }
+            @if (Build.Roof)
+            {
+                <p>
+                    The roof isn't drawn, so it's estimated: one piece per 2 × 2 m of floor, plus
+                    @($"{BomCalculator.RoofAllowance * 100:0}%") for eaves, ridge and cut pieces.
+                </p>
+            }
+            <p>Floors are counted per room. Doors replace the bottom course of wall. Beams, poles and gable ends aren't included.</p>
+            @if (Bom.UnknownCosts.Any())
+            {
+                <p class="warning">No recipe in catalog.json for: @string.Join(", ", Bom.UnknownCosts.Select(l => l.Name)). The totals leave them out.</p>
+            }
+        </footer>
+    </div>
+</aside>
+
+@code {
+    private BillOfMaterials Bom => State.Bom;
+    private BuildSettings Build => State.Plan.Build;
+
+    private static bool IsWood(string resource) => resource.Equals("Wood", StringComparison.OrdinalIgnoreCase);
+
+    private static string CostText(BomLine line) => line.UnitCost is null
+        ? "cost unknown"
+        : string.Join(", ", line.TotalCost.Select(c => $"{c.Value} {c.Key}"));
+
+    private void SetCourses(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var courses) && courses != Build.WallCourses)
+            State.Apply(State.Plan with { Build = Build with { WallCourses = courses } });
+    }
+
+    private void SetRoof(ChangeEventArgs e)
+    {
+        var roof = e.Value is true;
+        if (roof != Build.Roof) State.Apply(State.Plan with { Build = Build with { Roof = roof } });
+    }
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+    public void Dispose() => State.Changed -= OnStateChanged;
+    private void OnStateChanged() => StateHasChanged();
+}

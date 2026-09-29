@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FloorPlanner.Core/FloorPlanner.Core.csproj" />
+    <Project Path="src/FloorPlanner.Web/FloorPlanner.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FloorPlanner.Core.Tests/FloorPlanner.Core.Tests.csproj" />
+  </Folder>
+</Solution>

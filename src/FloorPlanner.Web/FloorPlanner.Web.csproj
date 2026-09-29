@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.12" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Serve the repo-level Assets/ folder (catalog.json + piece icons) at /assets without copying it into wwwroot. -->
+  <ItemGroup>
+    <Content Include="..\..\Assets\**\*" Link="wwwroot\assets\%(RecursiveDir)%(Filename)%(Extension)" ContentRoot="$(MSBuildThisFileDirectory)..\..\Assets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FloorPlanner.Core\FloorPlanner.Core.csproj" />
+  </ItemGroup>
+
+</Project>

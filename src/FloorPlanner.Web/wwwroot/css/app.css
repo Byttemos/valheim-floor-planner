@@ -1,0 +1,219 @@
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.loading-progress {
+    position: absolute;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto 0 auto;
+}
+
+    .loading-progress circle {
+        fill: none;
+        stroke: #e0e0e0;
+        stroke-width: 0.6rem;
+        transform-origin: 50% 50%;
+        transform: rotate(-90deg);
+    }
+
+        .loading-progress circle:last-child {
+            stroke: #1b6ec2;
+            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+            transition: stroke-dasharray 0.05s ease-in-out;
+        }
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+    .loading-progress-text:after {
+        content: var(--blazor-load-percentage-text, "Loading");
+    }
+
+code {
+    color: #c02d76;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+/* ---------- Floor planner ---------- */
+:root {
+    --bg: #f6f5f2;
+    --panel: #ffffff;
+    --border: #d9d6cf;
+    --text: #22211f;
+    --muted: #6b6860;
+    --accent: #2f6fdb;
+    --wall: #2b2a28;
+    --grid-minor: #e6e3dc;
+    --grid-major: #cfcac0;
+    --floor: #826252;
+    --floor-text: #fbf3ea;
+}
+
+html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; color: var(--text); background: var(--bg); }
+
+.editor {
+    position: relative; overflow: hidden;
+    display: grid; height: 100vh;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "toolbar toolbar" "catalog canvas" "status status";
+}
+.toolbar { grid-area: toolbar; }
+.catalog { grid-area: catalog; }
+.plan-canvas { grid-area: canvas; }
+.status-bar { grid-area: status; }
+
+.toolbar, .status-bar {
+    display: flex; align-items: center; gap: 1rem; padding: .5rem .75rem;
+    background: var(--panel); border-color: var(--border); border-style: solid; border-width: 0;
+}
+.toolbar { border-bottom-width: 1px; }
+.status-bar { border-top-width: 1px; font-size: .8rem; color: var(--muted); }
+.status-bar .spacer { flex: 1; }
+.app-name { margin-right: .5rem; }
+.toolbar .group { display: flex; gap: .25rem; }
+.toolbar .error { color: #b3261e; font-size: .85rem; }
+
+.toolbar button, .toolbar .button {
+    font: inherit; font-size: .875rem; padding: .3rem .7rem; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--panel); color: var(--text); text-decoration: none;
+}
+.toolbar button:hover:not(:disabled), .toolbar .button:hover { border-color: var(--muted); }
+.toolbar button:disabled { opacity: .45; cursor: default; }
+.toolbar button.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+.plan-canvas { position: relative; overflow: hidden; cursor: crosshair; outline: none; touch-action: none; }
+.plan-canvas svg { position: absolute; inset: 0; pointer-events: none; user-select: none; }
+
+.grid-minor { fill: none; stroke: var(--grid-minor); stroke-width: 1; }
+.grid-major { fill: none; stroke: var(--grid-major); stroke-width: 1; }
+
+.wall line { stroke: var(--wall); stroke-linecap: square; }
+/* Labels get a halo in the background colour so they stay readable on top of floors. */
+.wall text, .piece text { paint-order: stroke; stroke: var(--bg); stroke-linejoin: round; }
+.wall text { fill: var(--muted); font-family: system-ui, sans-serif; }
+
+.room { fill: var(--floor); stroke: none; }
+.room-label text {
+    fill: var(--floor-text); font-family: system-ui, sans-serif; font-weight: 600;
+    paint-order: stroke; stroke: var(--floor); stroke-linejoin: round;
+}
+.wall.selected line { stroke: var(--accent); }
+.wall.ghost line { stroke: var(--accent); opacity: .45; }
+.cursor { fill: var(--accent); }
+
+.piece rect { fill: rgba(246, 245, 242, .6); stroke: var(--text); }
+.piece text { fill: var(--text); font-family: system-ui, sans-serif; }
+.piece.selected rect { stroke: var(--accent); fill: rgba(220, 230, 250, .8); }
+.piece.ghost { opacity: .6; }
+.piece.ghost rect { stroke: var(--accent); }
+.piece.invalid rect { stroke: #b3261e; fill: rgba(179, 38, 30, .08); }
+.piece.unknown rect { stroke: #b3261e; }
+
+.catalog {
+    overflow-y: auto; padding: .5rem; background: var(--panel); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 2px;
+}
+.catalog h3 { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: .75rem .25rem .25rem; }
+.catalog h3:first-of-type { margin-top: .25rem; }
+.catalog button {
+    display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: .5rem;
+    font: inherit; font-size: .85rem; text-align: left; padding: .25rem .4rem; cursor: pointer;
+    border: 1px solid transparent; border-radius: 6px; background: none; color: var(--text);
+}
+.catalog button:hover { border-color: var(--border); }
+.catalog button.active { background: var(--accent); color: white; }
+.catalog img, .catalog .no-icon { width: 28px; height: 28px; object-fit: contain; }
+.catalog .no-icon { border: 1.5px dashed var(--muted); border-radius: 3px; box-sizing: border-box; }
+.catalog .size { font-size: .75rem; color: var(--muted); }
+.catalog button.active .size { color: rgba(255,255,255,.8); }
+.catalog .error { color: #b3261e; font-size: .8rem; }
+
+/* Bill of materials: slides out over the right edge of the canvas. */
+.bom {
+    grid-area: canvas; position: absolute; top: 0; right: 0; bottom: 0; width: 300px; z-index: 5;
+    transform: translateX(100%); transition: transform .2s ease;
+    background: var(--panel); border-left: 1px solid var(--border); box-shadow: -4px 0 12px rgba(0, 0, 0, .06);
+}
+.bom.open { transform: none; }
+.bom-tab {
+    position: absolute; top: 1rem; right: 100%; padding: .6rem .35rem; cursor: pointer;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font: inherit; font-size: .8rem; font-weight: 600; color: var(--text);
+    background: var(--panel); border: 1px solid var(--border); border-left-width: 0; border-radius: 0 6px 6px 0;
+}
+.bom.open .bom-tab { display: none; }
+.bom-body { height: 100%; overflow-y: auto; padding: .75rem 1rem; box-sizing: border-box; font-size: .85rem; }
+.bom header { display: flex; align-items: center; justify-content: space-between; }
+.bom h2 { font-size: 1rem; margin: 0; }
+.bom h3 { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 1rem 0 .25rem; }
+.bom .close { font-size: 1.25rem; line-height: 1; background: none; border: 0; cursor: pointer; color: var(--muted); }
+.bom .settings { display: grid; gap: .4rem; margin: .75rem 0; }
+.bom .settings label { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.bom .settings label.check { justify-content: flex-start; }
+.bom select { font: inherit; }
+.bom .totals { display: grid; gap: .25rem; padding: .6rem .75rem; border-radius: 8px; background: var(--bg); }
+.bom .total { display: flex; justify-content: space-between; }
+.bom .total.wood { font-size: 1.1rem; color: var(--floor); }
+.bom .empty { margin: 0; color: var(--muted); }
+.bom table { width: 100%; border-collapse: collapse; }
+.bom td { padding: .2rem 0; vertical-align: top; }
+.bom td.count { width: 3.5em; color: var(--muted); white-space: nowrap; }
+.bom td.cost { text-align: right; color: var(--muted); }
+.bom tr.unknown td.cost { color: #b3261e; font-style: italic; }
+.bom footer { margin-top: 1rem; font-size: .75rem; color: var(--muted); }
+.bom footer p { margin: .4rem 0; }
+.bom .warning { color: #b3261e; }

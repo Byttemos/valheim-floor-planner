@@ -1,0 +1,78 @@
+@using FloorPlanner.Core.Editing
+@using FloorPlanner.Core.Model
+@using FloorPlanner.Core.Serialization
+@using FloorPlanner.Web.Editor
+@using FloorPlanner.Web.Editor.Tools
+@implements IDisposable
+@inject EditorState State
+
+<header class="toolbar">
+    <strong class="app-name">Floor Planner</strong>
+
+    <div class="group">
+        <button class="@ToolClass("Select")" title="Select (V)" @onclick="() => State.SetTool(new SelectTool())">Select</button>
+        <button class="@ToolClass("Wall")" title="Draw walls (W)" @onclick="() => State.SetTool(new WallTool())">Wall</button>
+    </div>
+
+    <div class="group">
+        <button title="Undo (Ctrl+Z)" disabled="@(!State.History.CanUndo)" @onclick="State.Undo">Undo</button>
+        <button title="Redo (Ctrl+Y)" disabled="@(!State.History.CanRedo)" @onclick="State.Redo">Redo</button>
+        <button title="Reset view" @onclick="() => State.SetViewport(Viewport.Default)">Reset view</button>
+        <button title="Start a new plan" @onclick="() => State.Load(FloorPlan.Empty)">New</button>
+    </div>
+
+    <div class="group">
+        @* A data: URL + download attribute lets the browser save the file without any JavaScript interop. *@
+        <a class="button" href="@ExportHref" download="@($"{State.Plan.Name}.json")">Save</a>
+        <label class="button">
+            Open
+            <InputFile accept=".json" OnChange="OpenAsync" hidden />
+        </label>
+    </div>
+
+    @if (_error is not null)
+    {
+        <span class="error">@_error</span>
+    }
+</header>
+
+@code {
+    private string? _error;
+    private FloorPlan? _exportedPlan;
+    private string _exportHref = "";
+
+    // Only re-encode when the plan actually changes (plans are immutable, so reference equality is enough).
+    private string ExportHref
+    {
+        get
+        {
+            if (!ReferenceEquals(_exportedPlan, State.Plan))
+            {
+                _exportedPlan = State.Plan;
+                var bytes = System.Text.Encoding.UTF8.GetBytes(PlanSerializer.Serialize(State.Plan));
+                _exportHref = "data:application/json;base64," + Convert.ToBase64String(bytes);
+            }
+            return _exportHref;
+        }
+    }
+
+    private string ToolClass(string name) => State.ActiveTool.Name == name ? "active" : "";
+
+    private async Task OpenAsync(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            using var reader = new StreamReader(e.File.OpenReadStream(maxAllowedSize: 5_000_000));
+            State.Load(PlanSerializer.Deserialize(await reader.ReadToEndAsync()));
+            _error = null;
+        }
+        catch (Exception ex) when (ex is System.Text.Json.JsonException or IOException)
+        {
+            _error = $"Could not open file: {ex.Message}";
+        }
+    }
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+    public void Dispose() => State.Changed -= OnStateChanged;
+    private void OnStateChanged() => StateHasChanged();
+}

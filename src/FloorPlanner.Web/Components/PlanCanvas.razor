@@ -1,0 +1,150 @@
+@using FloorPlanner.Core.Editing
+@using FloorPlanner.Core.Geometry
+@using FloorPlanner.Core.Model
+@using FloorPlanner.Core.Rooms
+@using FloorPlanner.Web.Editor
+@using FloorPlanner.Web.Editor.Tools
+@implements IDisposable
+@inject EditorState State
+
+@* All input lands on this div; the SVG ignores pointer events so OffsetX/Y are always relative to the div.
+   Hit-testing happens in C# (FloorPlan.HitTestWall) instead of in the browser. *@
+<div class="plan-canvas" tabindex="0" @ref="_element"
+     @onpointerenter="() => _element.FocusAsync()"
+     @onpointerdown="OnPointerDown"
+     @onpointermove="OnPointerMove"
+     @onpointerup="OnPointerUp"
+     @onpointerleave="OnPointerUp"
+     @onwheel="OnWheel" @onwheel:preventDefault
+     @onkeydown="OnKeyDown"
+     @oncontextmenu:preventDefault>
+    <svg width="100%" height="100%">
+        <defs>
+            <pattern id="grid-minor" patternUnits="userSpaceOnUse"
+                     width="@MinorGridPx" height="@MinorGridPx" x="@Vp.Offset.X" y="@Vp.Offset.Y">
+                <path d="M @MinorGridPx 0 L 0 0 0 @MinorGridPx" class="grid-minor" />
+            </pattern>
+            <pattern id="grid-major" patternUnits="userSpaceOnUse"
+                     width="@MajorGridPx" height="@MajorGridPx" x="@Vp.Offset.X" y="@Vp.Offset.Y">
+                <path d="M @MajorGridPx 0 L 0 0 0 @MajorGridPx" class="grid-major" />
+            </pattern>
+        </defs>
+        @if (MinorGridPx >= 6)
+        {
+            <rect width="100%" height="100%" fill="url(#grid-minor)" />
+        }
+        <rect width="100%" height="100%" fill="url(#grid-major)" />
+
+        <g transform="translate(@Vp.Offset.X @Vp.Offset.Y) scale(@Vp.Scale)">
+            @foreach (var room in Rooms)
+            {
+                <RoomShape Room="room" Scale="Vp.Scale" />
+            }
+            @foreach (var wall in Plan.Walls)
+            {
+                <WallShape Wall="wall" Openings="Plan.OpeningsIn(wall, State.Catalog).ToList()"
+                           Selected="wall.Id == State.SelectedId" Scale="Vp.Scale" />
+            }
+            @if (State.ActiveTool.Preview is { } preview)
+            {
+                <WallShape Wall="preview" Ghost="true" Scale="Vp.Scale" />
+            }
+            @foreach (var placement in Plan.Placements)
+            {
+                <PlacementShape Item="State.Catalog.Find(placement.ItemId)" ItemId="@placement.ItemId" Pose="Plan.PoseOf(placement)"
+                                Selected="placement.Id == State.SelectedId" Scale="Vp.Scale" />
+            }
+            @if (State.ActiveTool.PreviewPlacement is { } ghost)
+            {
+                <PlacementShape Item="State.Catalog.Find(ghost.ItemId)" ItemId="@ghost.ItemId" Pose="Plan.PoseOf(ghost)"
+                                Ghost="true" Invalid="!State.ActiveTool.PreviewValid" Scale="Vp.Scale" />
+            }
+            @foreach (var room in Rooms)
+            {
+                <RoomShape Room="room" Scale="Vp.Scale" Label="true" />
+            }
+            @if (State.ActiveTool is WallTool)
+            {
+                <circle class="cursor" cx="@CursorMarker.X" cy="@CursorMarker.Y" r="@(4 / Vp.Scale)" />
+            }
+        </g>
+    </svg>
+</div>
+
+@code {
+    private ElementReference _element;
+    private bool _panning;
+    private Vec2 _lastScreen;
+
+    private Viewport Vp => State.Viewport;
+    private FloorPlan Plan => State.DisplayPlan;
+
+    private IReadOnlyList<Room> Rooms => State.Rooms;
+    private double MinorGridPx => State.GridSize * Vp.Scale;
+    private double MajorGridPx => BuildRules.FullSection * Vp.Scale;
+    private Vec2 CursorMarker => State.ActiveTool.Preview?.End ?? State.Snap(State.Cursor);
+
+    protected override void OnInitialized() => State.Changed += OnStateChanged;
+    public void Dispose() => State.Changed -= OnStateChanged;
+    private void OnStateChanged() => StateHasChanged();
+
+    private PointerInput ToInput(MouseEventArgs e)
+    {
+        var screen = new Vec2(e.OffsetX, e.OffsetY);
+        return new PointerInput(Vp.ScreenToWorld(screen), screen, e.Button, e.ShiftKey, e.CtrlKey);
+    }
+
+    private void OnPointerDown(PointerEventArgs e)
+    {
+        var input = ToInput(e);
+        if (input.Button == PointerInput.Middle)
+        {
+            _panning = true;
+            _lastScreen = input.Screen;
+            return;
+        }
+        State.ActiveTool.PointerDown(State, input);
+    }
+
+    private void OnPointerMove(PointerEventArgs e)
+    {
+        var input = ToInput(e);
+        if (_panning)
+        {
+            State.SetViewport(Vp.PanBy(input.Screen - _lastScreen));
+            _lastScreen = input.Screen;
+            return;
+        }
+        State.ActiveTool.PointerMove(State, input);
+        State.SetCursor(input.World);
+    }
+
+    private void OnPointerUp(PointerEventArgs e)
+    {
+        _panning = false;
+        State.ActiveTool.PointerUp(State, ToInput(e));
+    }
+
+    private void OnWheel(WheelEventArgs e)
+    {
+        // Browsers report the wheel in pixels, lines or pages; normalise to roughly pixels.
+        var deltaY = e.DeltaMode switch { 1 => e.DeltaY * 33, 2 => e.DeltaY * 800, _ => e.DeltaY };
+        if (deltaY == 0 || State.ActiveTool.Wheel(State, deltaY)) return;
+
+        var factor = deltaY < 0 ? 1.15 : 1 / 1.15;
+        State.SetViewport(Vp.ZoomAt(new Vec2(e.OffsetX, e.OffsetY), factor));
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e)
+        {
+            case { CtrlKey: true, Key: "z" or "Z", ShiftKey: false }: State.Undo(); break;
+            case { CtrlKey: true, Key: "y" or "Y" } or { CtrlKey: true, ShiftKey: true, Key: "z" or "Z" }: State.Redo(); break;
+            case { Key: "v" or "V" }: State.SetTool(new SelectTool()); break;
+            case { Key: "w" or "W" }: State.SetTool(new WallTool()); break;
+            case { Key: "b" or "B", CtrlKey: false }: State.ToggleBom(); break;
+            default: State.ActiveTool.KeyDown(State, e.Key); break;
+        }
+    }
+}

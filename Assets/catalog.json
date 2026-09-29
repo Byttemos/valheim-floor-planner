@@ -1,0 +1,38 @@
+// Pieces that can be placed in the planner.
+//
+//   id         unique key, stored in saved plans (don't rename once used)
+//   name       label shown in the planner
+//   category   groups pieces in the side panel
+//   width      metres; for "wall" pieces this is the width along the wall
+//   depth      metres
+//   placement  "free" (anywhere on the floor), "wall" (snaps into a wall, like doors), or "structure"
+//              (not placeable; walls, floors and roof use these for their name and cost)
+//   image      optional; a file name in this Assets folder, or a full URL
+//   cost       optional; the build recipe, e.g. { "Wood": 10 }. Pieces without one show as "cost unknown"
+//              in the bill of materials.
+//
+// NOTE: all sizes below are placeholders. Replace them with in-game measurements.
+// NOTE: costs are from memory and need checking in-game.
+[
+  // Structure: counted in the bill of materials. The ids are fixed (see BomCalculator).
+  { "id": "wood-wall",        "name": "Wood wall 2 m",    "category": "Structure", "width": 2,   "depth": 0.2, "placement": "structure", "cost": { "Wood": 2 } },
+  { "id": "wood-wall-small",  "name": "Wood wall 1 m",    "category": "Structure", "width": 1,   "depth": 0.2, "placement": "structure", "cost": { "Wood": 1 } },
+  { "id": "wood-floor",       "name": "Wood floor 2×2",   "category": "Structure", "width": 2,   "depth": 2,   "placement": "structure", "cost": { "Wood": 2 } },
+  { "id": "wood-floor-small", "name": "Wood floor 1×1",   "category": "Structure", "width": 1,   "depth": 1,   "placement": "structure", "cost": { "Wood": 1 } },
+  { "id": "wood-roof",        "name": "Wood roof",        "category": "Structure", "width": 2,   "depth": 2,   "placement": "structure", "cost": { "Wood": 2 } },
+
+  { "id": "wood-door",        "name": "Wood door",        "category": "Doors",    "width": 2,   "depth": 0.3, "placement": "wall", "cost": { "Wood": 4 } },
+  { "id": "wood-double-door", "name": "Wood double door", "category": "Doors",    "width": 4,   "depth": 0.3, "placement": "wall" },
+
+  { "id": "workbench",        "name": "Workbench",        "category": "Crafting", "width": 1.8,   "depth": 1,   "placement": "free", "image": "Workbench.webp", "cost": { "Wood": 10 } },
+  { "id": "forge",            "name": "Forge",            "category": "Crafting", "width": 1.8,   "depth": 1, "placement": "free", "image": "Forge.webp",     "cost": { "Wood": 10, "Stone": 4, "Coal": 4, "Copper": 6 } },
+  { "id": "cauldron",         "name": "Cauldron",         "category": "Crafting", "width": 1,   "depth": 1.4,   "placement": "free", "image": "Cauldron.webp",  "cost": { "Tin": 10 } },
+  { "id": "fermenter",        "name": "Fermenter",        "category": "Crafting", "width": 2, "depth": 2, "placement": "free", "image": "Fermenter.webp", "cost": { "Fine wood": 30, "Bronze": 5, "Resin": 10 } },
+
+  { "id": "campfire",         "name": "Campfire",         "category": "Fire",     "width": 0.5, "depth": 0.5, "placement": "free", "image": "Campfire.webp",  "cost": { "Stone": 5, "Wood": 2 } },
+  { "id": "hearth",           "name": "Hearth",           "category": "Fire",     "width": 4,   "depth": 3,   "placement": "free", "image": "Hearth.webp" },
+
+  { "id": "bed",              "name": "Bed",              "category": "Living",   "width": 1.5,   "depth": 2.6,   "placement": "free", "image": "Bed.webp",       "cost": { "Wood": 8 } },
+  { "id": "chest",            "name": "Chest",            "category": "Living",   "width": 2, "depth": 1,   "placement": "free", "image": "Chest.webp",     "cost": { "Wood": 10 } },
+  { "id": "portal",           "name": "Portal",           "category": "Travel",   "width": 2.5, "depth": 0.5,   "placement": "free", "image": "Portal.webp",    "cost": { "Fine wood": 20, "Greydwarf eye": 10, "Surtling core": 2 } },
+]

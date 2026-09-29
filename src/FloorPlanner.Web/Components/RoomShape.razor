@@ -1,0 +1,23 @@
+@using System.Globalization
+@using FloorPlanner.Core.Rooms
+
+@* Rendered twice: the floor under everything, and the area label above the pieces so furniture can't hide it. *@
+@if (Label)
+{
+    <g class="room-label">
+        <text x="@Room.Centroid.X" y="@Room.Centroid.Y" font-size="@(12 / Scale)" stroke-width="@(3 / Scale)"
+              text-anchor="middle" dominant-baseline="middle">@($"{Room.AreaSquareMetres:0.#} m²")</text>
+    </g>
+}
+else
+{
+    <polygon class="room" points="@Points" />
+}
+
+@code {
+    [Parameter, EditorRequired] public Room Room { get; set; } = default!;
+    [Parameter] public double Scale { get; set; } = 1;
+    [Parameter] public bool Label { get; set; }
+
+    private string Points => string.Join(' ', Room.Outline.Select(p => string.Create(CultureInfo.InvariantCulture, $"{p.X},{p.Y}")));
+}
